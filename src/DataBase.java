@@ -13,17 +13,9 @@ import java.util.Locale;
 
 import static java.sql.Types.NULL;
 
-/**
- * Класс DataBase создан для работы с СУБД PostgreSQL,
- * написания SQL-запросов на ввод и вывод данных.
- * У класса нет собственных переменных, только методы.
- *
- */
 public class DataBase {
-    /**
-     * Просто создаем новую таблицу в PostgreSQL,
-     * предварительно удалив предыдущую, если такая была
-     */
+    static Printing printingObject = new Printing("000AAA.txt");
+
     public static void initialCreation(Connection connection) throws SQLException {
         String creationQuery = "drop table if exists locatorData;" +
                 "create table locatorData(" +
@@ -49,14 +41,6 @@ public class DataBase {
         creationStatement.executeUpdate(creationQuery);
     }
 
-    /**
-     * Метод для ввода данных в базу данных, собраных в массив
-     * во время выполнения метода locator() класса Excel.
-     * Оператор switch подставляет каждое значение в надлежащее
-     * поле таблицы SQL.
-     * Здесь суммируются выпавшие осадки по осадкомеру
-     * и приводятся к размерности [мм/10мин], так они вводятся в таблицу
-     */
     public static void insertLocator(Connection connection, ArrayList<Cell> arrayList) throws SQLException{
         String query = "insert into locatorData (measurementDate, measurementTime, rainGauge, amount, height, intensity, z11, z10, z9, z8, z7, z6, z5, z4, z3, z2, z1) " +
                 "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
@@ -136,39 +120,7 @@ public class DataBase {
         preparedStatement.close();
     }
 
-    /**
-     * Не используется
-     */
-    public static void delete(Connection connection) throws SQLException {
-        String deleteQuery = "delete from meteorology " +
-                "where (id = ?);";
-        PreparedStatement preparedStatement = connection.prepareStatement(deleteQuery);
-        preparedStatement.setInt(1, 4);
-        preparedStatement.execute();
-        preparedStatement.close();
-    }
-
-    /**
-     * Не используется
-     */
-    public static void truncateLocatorData(Connection connection) {
-        try {
-            String truncationQuery = "truncate locatorData;";
-            PreparedStatement preparedStatement = connection.prepareStatement(truncationQuery);
-            preparedStatement.execute();
-            preparedStatement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Метод для вывода значений для всех осадкомера
-     * в один .txt файл для построения графика распределения точек
-     */
     public static void generalSelection(Connection connection) throws Exception {
-        //По запросу выводятся только пары Количество - Интенсивность,
-        //где поле интенсивность в таблице не NULL
         String selectQuery = "select amount, intensity " +
                 "from locatorData " +
                 "where intensity is not null";
@@ -179,29 +131,14 @@ public class DataBase {
         File targetFile = new File(targetDir, "dispersionFile.txt");
         PrintStream printStream = new PrintStream(new FileOutputStream(targetFile));
 
-        /*
-        В теле цикла while просходит деление интенсивности осадков по локатору,
-        полученных из таблицы
-        Перед занесением в файл .txt интенсивность делится на 6 для соответствия размерностей
-        [10/час] / 6 = [мм/10мин]
-        */
         while (resultSet.next()) {
             printStream.printf(Locale.US, "%.2f\t%.2f\r\n", resultSet.getDouble(1), (resultSet.getDouble(2)/6));
         }
         printStream.close();
     }
 
-    /**
-     * Метод для вывода количества выпавших осадков
-     * и интенсивности осадков по локатору для каждого
-     * отдельного осадкомера.
-     * Результат выводится файлом .txt
-     */
     public static void perGauge(Connection connection) throws Exception{
-        //итерация по осадкомерам
         for (int i = 1001; i < 1036; i++ ) {
-            //По запросу выводятся только пары Количество - Интенсивность,
-            //где поле интенсивность в таблице не NULL
             String selectQuery = "select amount, intensity " +
                     "from locatorData " +
                     "where intensity is not null " +
@@ -209,135 +146,98 @@ public class DataBase {
 
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(selectQuery);
-            //если resultSet пустой, то for переходит к следующей итерации,
-            // чтобы не создавать лишних файлов в папке per gauge
             if (!resultSet.next()) {continue;}
 
             File targetDirectory = new File(System.getProperty("user.dir") + "\\DataFiles\\per gauge");
             File targetFile = new File(targetDirectory, i + ".txt");
             PrintStream printStream = new PrintStream(new FileOutputStream(targetFile));
 
-            /*
-            В теле цикла while просходит деление интенсивности осадков по локатору,
-            полученных из таблицы
-            Перед занесением в файл .txt интенсивность делится на 6 для соответствия размерностей
-            [10/час] / 6 = [мм/10мин]
-            */
             while (resultSet.next()) {
                 printStream.printf(Locale.US, "%.2f\t%.2f\r\n", resultSet.getDouble(1), (resultSet.getDouble(2)/6));
             }
 
             printStream.close();
-
-            //Вызов метода gnuplotCode для формирования файла .plt для построения графика
             Gnuplot.gnuplotCode(targetFile);
         }
     }
 
-    /**
-     * Метод coefficientsSelect() создан для выборки
-     * значений специально для расчетов коэффициентов A и b
-     * для каждого отдельного осадкомера
-     */
     public static void coefficientsSelect(Connection connection) throws Exception {
-        //итерации по осадкомерам
         for (int i = 1001; i < 1036; i++) {
-            /*
-            При количествее осадков = 0 расчет невозможен
-            При z1 = 0 расчет невозможен
-            При z1 = null расчет невозможен
-            */
             String selectQuery = "select amount, z1 from locatorData " +
                     "where rainGauge = " + i +
                     " and amount != 0 " +
                     " and (z1 is not null and z1 != 0);";
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(selectQuery);
-            //если resultSet пустой, то for переходит к следующей итерации,
-            // чтобы не создавать лишних файлов в папке per gauge
             if (!resultSet.next()) {continue;}
 
-            /*создание двумерного массива arrayList
-            под каждым индексом массива arrayList находится массив типа Double */
             ArrayList<Double[]> arrayList = new ArrayList<>();
 
             while (resultSet.next()) {
-                //Вот тот самый массив типа Double, состоящий из 2х элементов
                 Double[] doubleArray = new Double[2];
-                //В нулевую позицию помещается Количество выпавших осадков
                 doubleArray[0] = resultSet.getDouble("amount");
-                //В первую позицию помещается значение отражаемости на уровне z1
                 doubleArray[1] = resultSet.getDouble("z1");
                 arrayList.add(doubleArray);
             }
 
-            //двумерный массив, наполненный парами значений передается для вычисления коэффициентов
-            DataBase.coeffCalculation(arrayList, i);
+            aCoeffCalculation(arrayList, i);
         }
     }
 
-    /**
-     * Метод coeffCalculation() создан для вычисления всех вариантов
-     * коэффициентов A и b из системы уравнений
-     * I1 = A * z1 ^ b
-     * I2 = A * z2 ^ b
-     */
-    public static void coeffCalculation(ArrayList<Double[]> arrayList, int iterator) throws IOException {
-        File targetDirectory = new File(System.getProperty("user.dir") + "\\DataFiles\\per gauge");
-        File targetFile = new File(targetDirectory, iterator + "coefficients.txt");
-        PrintStream printStream = new PrintStream(new FileOutputStream(targetFile));
-
-        //массивы, в кототрых будут содержаться коэффициенты от каждой возможной комбинации
+    public static void aCoeffCalculation(ArrayList<Double[]> arrayList, int iterator) throws IOException{
+        double b = Math.round(bCoeffCalculation(arrayList)*100.0)/100.0;
         ArrayList<Double> arrayA = new ArrayList<>();
-        ArrayList<Double> arrayB = new ArrayList<>();
 
-        //цикл для перебора всех комбинаций значений
         for (int i = 0; i < arrayList.size(); i++) {
             for (int j = i+1; j < arrayList.size(); j++) {
-                //на каждую итерацию переменным присваиваются новые значения
+                double I2 = arrayList.get(j)[0];
+                double I1 = arrayList.get(i)[0];
+                double Z2 = arrayList.get(j)[1];
+                double Z1 = arrayList.get(i)[1];
+                double A = I1 / Math.pow(Math.pow(10, Z1/10), b);
+
+                if ((I1 != I2) && (Z1 != Z2)) {
+                    arrayA.add(A);
+                }
+                if ((i+2 == arrayList.size()) && (j+1 == arrayList.size())) {
+                    Statistics varA = new Statistics(arrayA);
+                    double coefA = Math.round(varA.average(varA.detectAndDelete(
+                            varA.confidenceLevel(varA.sort())))*1000.0)/1000.0;
+                    new Coefficients(coefA, b, iterator);
+                    printAverageCoeffs(coefA, b, iterator);
+                }
+            }
+        }
+    }
+
+    public static double bCoeffCalculation(ArrayList<Double[]> arrayList) {
+        ArrayList<Double> arrayB = new ArrayList<>();
+
+        for (int i = 0; i < arrayList.size(); i++) {
+            for (int j = i+1; j < arrayList.size(); j++) {
                 double I2 = arrayList.get(j)[0];
                 double I1 = arrayList.get(i)[0];
                 double Z2 = arrayList.get(j)[1];
                 double Z1 = arrayList.get(i)[1];
                 double b = Math.log(I2 / I1) /
                         Math.log(Math.pow(10, Z2/10) / Math.pow(10, Z1/10));
-                double A = I1 / Math.pow(Math.pow(10, Z1/10), b);
 
                 if ((I1 != I2) && (Z1 != Z2)) {
-                    //значения выводятся в файл .txt
-                    printStream.printf(Locale.US, "%.2e\t%.2f\r\n", A, b);
-                    //значения каждого из коэффициентов заносятся в массив для вычисления средни значений
-                    arrayA.add(A);
                     arrayB.add(b);
+                }
+                if ((i+2 == arrayList.size()) && (j+1 == arrayList.size())) {
+                    Statistics variable = new Statistics(arrayB);
+                    return variable.average(variable.detectAndDelete(
+                            variable.confidenceLevel(variable.sort())));
                 }
             }
         }
-        //вызов метода для вычисления средний коэффициентов для каждого осадкомера
-        DataBase.printAverageCoeffs(arrayA, arrayB, iterator);
+        return -999;
     }
 
-    /**
-     * Метод printAverageCoeffs() создан для вывода средних
-     * значений коэффициентов A и b для каждого осадкомера в файл .txt
-     */
-    public static void printAverageCoeffs (ArrayList<Double> arrayA, ArrayList<Double> arrayB, int iterator) throws IOException {
-        double sumA = 0;
-        double sumB = 0;
-
-        for (int i = 0; i < arrayA.size(); i++) {
-            sumA += arrayA.get(i);
-            sumB += arrayB.get(i);
-
-            File targetDirectory = new File(System.getProperty("user.dir") + "\\DataFiles\\per gauge");
-            File targetFile = new File(targetDirectory, iterator + "AverageCoefficients.txt");
-            PrintStream printStream = new PrintStream(new FileOutputStream(targetFile));
-
-            printStream.print("средние коэффициенты для " + iterator + " :\r\n");
-            printStream.print("A = ");
-            printStream.printf(Locale.US, "%.1e\r\n", sumA/arrayA.size());
-            printStream.print("B = ");
-            printStream.printf(Locale.US, "%.1e\r\n", sumB/arrayB.size());
-            printStream.close();
-        }
+    public static void printAverageCoeffs (double A, double b, int iterator) throws IOException{
+        printingObject.out.print("средние коэффициенты для " + iterator + " :\r\n");
+        printingObject.out.print("A = " + A + "\r\n");
+        printingObject.out.print("B = " + b + "\r\n\n");
     }
 }

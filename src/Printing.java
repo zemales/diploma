@@ -14,6 +14,5 @@ public class Printing {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 }

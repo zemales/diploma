@@ -41,6 +41,7 @@ public class DataBase {
         creationStatement.executeUpdate(creationQuery);
     }
 
+    //задача заменить array объектом нового лкасса
     public static void insertLocator(Connection connection, ArrayList<Cell> arrayList) throws SQLException{
         String query = "insert into locatorData (measurementDate, measurementTime, rainGauge, amount, height, intensity, z11, z10, z9, z8, z7, z6, z5, z4, z3, z2, z1) " +
                 "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
@@ -166,7 +167,8 @@ public class DataBase {
             String selectQuery = "select amount, z1 from locatorData " +
                     "where rainGauge = " + i +
                     " and amount != 0 " +
-                    " and (z1 is not null and z1 != 0);";
+                    " and (z1 is not null and z1 != 0) " +
+                    " and intensity is not null;";
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(selectQuery);
             if (!resultSet.next()) {continue;}
@@ -202,7 +204,7 @@ public class DataBase {
                 if ((i+2 == arrayList.size()) && (j+1 == arrayList.size())) {
                     Statistics varA = new Statistics(arrayA);
                     double coefA = Math.round(varA.average(varA.detectAndDelete(
-                            varA.confidenceLevel(varA.sort())))*1000.0)/1000.0;
+                            varA.confidenceLevel(varA.sort())))*1000000.0)/1000000.0;
                     new Coefficients(coefA, b, iterator);
                     printAverageCoeffs(coefA, b, iterator);
                 }
@@ -219,8 +221,11 @@ public class DataBase {
                 double I1 = arrayList.get(i)[0];
                 double Z2 = arrayList.get(j)[1];
                 double Z1 = arrayList.get(i)[1];
-                double b = Math.log(I2 / I1) /
-                        Math.log(Math.pow(10, Z2/10) / Math.pow(10, Z1/10));
+                /*double b = Math.log(I2 / I1) /
+                        Math.log(Math.pow(10, Z2/10) / Math.pow(10, Z1/10));*/
+
+                double b = Math.log(Math.pow(10, Z2/10) / Math.pow(10, Z1/10)) /
+                        Math.log(I2 / I1);
 
                 if ((I1 != I2) && (Z1 != Z2)) {
                     arrayB.add(b);
@@ -233,6 +238,31 @@ public class DataBase {
             }
         }
         return -999;
+    }
+
+    public static void poc_meth (Connection connection) throws Exception{
+        Coefficients coefficients = new Coefficients();
+        File targetDir = new File(System.getProperty("user.dir") + "\\DataFiles");
+        File targetFile = new File(targetDir, "poc.txt");
+        PrintStream printStream = new PrintStream(new FileOutputStream(targetFile));
+
+        for (int i = 1001; i < 1036; i++) {
+            String pocQuery = "select measurementDate, measurementTime, raingauge, intensity, amount, " +
+                    "z1 from locatordata where raingauge = " + i + " and intensity is not null";
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(pocQuery);
+            if (!resultSet.next()) {continue;}
+
+            while (resultSet.next()) {
+                printStream.print(resultSet.getDate("measurementDate") + "\t"
+                        + resultSet.getTime("measurementTime") + "\t"
+                        + resultSet.getInt("rainGauge") + "\t");
+                printStream.printf(Locale.US, "%.2f\t%.2f\t%.1f\r\n",
+                        resultSet.getDouble("amount"),
+                        coefficients.getA(i) * Math.pow(Math.pow(10, (double) resultSet.getInt("z1") / 10), coefficients.getB(i)),
+                        resultSet.getDouble("intensity")/6);
+            }
+        }
     }
 
     public static void printAverageCoeffs (double A, double b, int iterator) throws IOException{

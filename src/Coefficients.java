@@ -14,9 +14,8 @@ public class Coefficients {
             content[2] = (double) rainGauge;
 
             container.add(content);
-        }
-        else {
-            System.out.println("Данный rainGauge уже есть в массиве");
+        } else {
+            System.out.println(rainGauge + " rainGauge уже есть в массиве");
         }
     }
 
@@ -37,9 +36,6 @@ public class Coefficients {
         }
     }
 
-    /**
-     * FOLLOWING CODE IS SHIIIIIIIIIT
-     */
     double getA(int rainGauge) {
         for (Double[] var : container) {
             if (var[2] == rainGauge) {

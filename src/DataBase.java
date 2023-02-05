@@ -133,7 +133,7 @@ public class DataBase {
         PrintStream printStream = new PrintStream(new FileOutputStream(targetFile));
 
         while (resultSet.next()) {
-            printStream.printf(Locale.US, "%.2f\t%.2f\r\n", resultSet.getDouble(1), (resultSet.getDouble(2)/6));
+            printStream.printf(Locale.US, "%.2f\t%.2f\r\n", resultSet.getDouble("amount"), (resultSet.getDouble("intensity")/6));
         }
         printStream.close();
     }
@@ -203,8 +203,10 @@ public class DataBase {
                 }
                 if ((i+2 == arrayList.size()) && (j+1 == arrayList.size())) {
                     Statistics varA = new Statistics(arrayA);
-                    double coefA = Math.round(varA.average(varA.detectAndDelete(
-                            varA.confidenceLevel(varA.sort())))*1000000.0)/1000000.0;
+
+                    double coefA = Math.round(varA.sort().confidenceLevel()
+                            .detectAndDelete().average()*1000000.0)/1000000.0;
+
                     new Coefficients(coefA, b, iterator);
                     printAverageCoeffs(coefA, b, iterator);
                 }
@@ -221,8 +223,6 @@ public class DataBase {
                 double I1 = arrayList.get(i)[0];
                 double Z2 = arrayList.get(j)[1];
                 double Z1 = arrayList.get(i)[1];
-                /*double b = Math.log(I2 / I1) /
-                        Math.log(Math.pow(10, Z2/10) / Math.pow(10, Z1/10));*/
 
                 double b = Math.log(Math.pow(10, Z2/10) / Math.pow(10, Z1/10)) /
                         Math.log(I2 / I1);
@@ -232,8 +232,8 @@ public class DataBase {
                 }
                 if ((i+2 == arrayList.size()) && (j+1 == arrayList.size())) {
                     Statistics variable = new Statistics(arrayB);
-                    return variable.average(variable.detectAndDelete(
-                            variable.confidenceLevel(variable.sort())));
+
+                    return variable.sort().confidenceLevel().detectAndDelete().average();
                 }
             }
         }

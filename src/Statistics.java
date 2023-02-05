@@ -7,33 +7,33 @@ public class Statistics {
         this.coeffsArray = coeffsArray;
     }
 
-    ArrayList<Double> sort() {
+    Statistics sort() {
         Collections.sort(coeffsArray);
-        return coeffsArray;
+        return this;
     }
 
-    ArrayList<Double> confidenceLevel(ArrayList<Double> coeffsArray) {
-        ArrayList<Double> corrected = new ArrayList<>();
+    Statistics confidenceLevel() {
         for (int i = 0; i < coeffsArray.size(); i++) {
-            if ((i > coeffsArray.size() * 0.025) && (i < coeffsArray.size() - coeffsArray.size()*0.025)){
-                corrected.add(coeffsArray.get(i));
+            if ((i < coeffsArray.size() * 0.025) && (i > coeffsArray.size()*0.975)){
+                coeffsArray.remove(i);
             }
         }
-        return corrected;
+        return this;
     }
 
-    public double average(ArrayList<Double> array) {
+    double average() {
         double sumX = 0;
-        for (Double x : array) {
+        for (Double x : coeffsArray) {
             sumX += x;
         }
-        return sumX/array.size();
+        return sumX/coeffsArray.size();
     }
 
-    public ArrayList<Double> detectAndDelete(ArrayList<Double> coeffsArray) {
+    Statistics detectAndDelete() {
         double numerator = 0;
+        double average = average();
         for (int i = 0; i < coeffsArray.size(); i++) {
-            numerator += Math.pow(coeffsArray.get(i) - average(coeffsArray), 2);
+            numerator += Math.pow(coeffsArray.get(i) - average, 2);
         }
         double standardDeviation = Math.sqrt(numerator / coeffsArray.size());
 
@@ -42,6 +42,6 @@ public class Statistics {
                 coeffsArray.remove(i);
             }
         }
-        return coeffsArray;
+        return this;
     }
 }

@@ -14,7 +14,7 @@ public class Statistics {
 
     Statistics confidenceLevel() {
         for (int i = 0; i < coeffsArray.size(); i++) {
-            if ((i < coeffsArray.size() * 0.025) && (i > coeffsArray.size()*0.975)){
+            if ((i < coeffsArray.size() * 0.025) || (i > coeffsArray.size()*0.975)){
                 coeffsArray.remove(i);
             }
         }

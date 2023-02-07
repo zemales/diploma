@@ -232,7 +232,6 @@ public class DataBase {
                 }
                 if ((i+2 == arrayList.size()) && (j+1 == arrayList.size())) {
                     Statistics variable = new Statistics(arrayB);
-
                     return variable.sort().confidenceLevel().detectAndDelete().average();
                 }
             }

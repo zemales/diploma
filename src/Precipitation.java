@@ -6,66 +6,57 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.sql.*;
 import java.time.ZoneId;
-import java.util.Date;
 
-public class Precipitation extends Thread{
-    Connection connection;
-    FileInputStream inputStream;
-    BufferedInputStream bufferedInputStream;
-    Workbook workbook;
-
-    Precipitation (File file, Connection connection) {
+public class Precipitation {
+    static Connection connection;
+    public static void main(String[] args) {
         try {
-            this.connection = connection;
-            inputStream = new FileInputStream(file);
-            bufferedInputStream = new BufferedInputStream(inputStream, 200);
-            workbook = WorkbookFactory.create(bufferedInputStream);
-        } catch (IOException e) {
+            connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "3515");
+        } catch(SQLException e) {
             e.printStackTrace();
         }
+
+        File dir = new File(System.getProperty("user.dir") + "\\DataFiles\\Pluvio");
+        Precipitation.showFiles(dir.listFiles());
     }
 
-    public void run() {
-        Date begin = new Date();
+    static void parseAndInsert(File file) {
         try {
-            if (!existenceCheck(connection)) {
-                return;
-            }
             String insertion = "insert into precipitation (measurementDate, measurementTime," +
                     " rainGauge, amount) values (?, ?, ?, ?);";
+            FileInputStream inputStream = new FileInputStream(file);
+            Workbook workbook = WorkbookFactory.create(inputStream);
             Sheet sheet = workbook.getSheetAt(0);
             for (int r = 1; r < sheet.getLastRowNum(); r += 2) {
                 Row row = sheet.getRow(r);
                 for (int cell = 0; cell < row.getLastCellNum(); cell += 4) {
-                    try {
-                        try (PreparedStatement preparedStatement = connection.prepareStatement(insertion)) {
-                            preparedStatement.setObject(1, row.getCell(1).getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-                            preparedStatement.setObject(2, row.getCell(2).getLocalDateTimeCellValue().toLocalTime());
-                            preparedStatement.setInt(3, (int) row.getCell(cell).getNumericCellValue());
-                            preparedStatement.setDouble(4, new BigDecimal(row.getCell(cell + 3).getNumericCellValue()
-                                    + sheet.getRow(r - 1).getCell(cell + 3).getNumericCellValue(), new MathContext(2)).doubleValue());
-                            preparedStatement.execute();
-                        } catch (PSQLException numericOverFlow) {}
-                    } catch (SQLException sqlException) {
-                        sqlException.printStackTrace();
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(insertion)) {
+                        preparedStatement.setObject(1, row.getCell(1).getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                        preparedStatement.setObject(2, row.getCell(2).getLocalDateTimeCellValue().toLocalTime());
+                        preparedStatement.setInt(3, (int) row.getCell(cell).getNumericCellValue());
+                        preparedStatement.setDouble(4, new BigDecimal(row.getCell(cell + 3).getNumericCellValue()
+                                + sheet.getRow(r - 1).getCell(cell + 3).getNumericCellValue(), new MathContext(2)).doubleValue());
+                        preparedStatement.execute();
+                    } catch (PSQLException numericOverFlow) {
+                        numericOverFlow.getMessage();
+                    } catch (IllegalStateException illegalStateException) {
+                        System.out.println("wrong formatting in " + file.getAbsolutePath());
                     }
                 }
             }
-        } catch(NullPointerException nullPointerException) {}
-        Date end = new Date();
-        System.out.println("time to complete parseExcel " + (end.getTime() - begin.getTime()));
+            System.out.println("done working with " + file.getAbsolutePath());
+        } catch (NullPointerException | IOException | SQLException exception) {
+            exception.getMessage();
+        }
     }
 
-    boolean existenceCheck(Connection connection) {
-        try {
-            DatabaseMetaData metaData = connection.getMetaData();
-            ResultSet resultSet = metaData.getTables(null, null, "precipitation", null);
-            while (resultSet.next()) {
-                return true;
+    static void showFiles(File[] files) {
+        for (File file : files) {
+            if (file.isDirectory()) {
+                showFiles(file.listFiles());
+            } else {
+                parseAndInsert(file);
             }
-        } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
         }
-        return false;
     }
 }

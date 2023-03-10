@@ -74,7 +74,7 @@ public class Precipitation {
                 preparedStatement.setObject(1, dateCell.getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
             }
         } catch (IllegalStateException e) {
-            System.out.println("date");
+            System.out.println("IllegalStateException in date()");
         }
     }
 
@@ -87,7 +87,7 @@ public class Precipitation {
                 preparedStatement.setObject(2, timeCell.getLocalDateTimeCellValue().toLocalTime());
             }
         } catch (IllegalStateException e) {
-            System.out.println("time");
+            System.out.println("IllegalStateException in time()");
         }
     }
 
@@ -100,7 +100,7 @@ public class Precipitation {
                 preparedStatement.setInt(3, (int) gaugeNumberCell.getNumericCellValue());
             }
         } catch (IllegalStateException e) {
-            System.out.println("rainGauge");
+            System.out.println("IllegalStateException in rainGauge()");
         }
     }
 
@@ -108,14 +108,15 @@ public class Precipitation {
         try {
             Cell amountCell = row.getCell(cell+3);
             if (amountCell.getCellType() == CellType.STRING) {
-                preparedStatement.setDouble(4, Double.parseDouble(amountCell.getStringCellValue()));
+                preparedStatement.setDouble(4, Double.parseDouble(amountCell.getStringCellValue()) +
+                        Double.parseDouble(row.getSheet().getRow(row.getRowNum() - 1).getCell(cell + 3).getStringCellValue()));
             } else {
                 preparedStatement.setDouble(4, new BigDecimal(row.getCell(cell + 3).getNumericCellValue()
                         + row.getSheet().getRow(row.getRowNum() - 1).getCell(cell + 3).getNumericCellValue(),
                         new MathContext(2)).doubleValue());
             }
         } catch (IllegalStateException e) {
-            System.out.println("amount");
+            System.out.println("IllegalStateException in amount()");
         }
     }
 }

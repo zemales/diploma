@@ -3,27 +3,42 @@ import java.io.PrintStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Locale;
+import java.util.*;
 
+//новые коэффициенты
+//хэша с новыми коэффициентами
+//в запрос закидывать коэффы из хэши
 public class DataBase {
     static Printing printingObject = new Printing("000AAA.txt");
 
-    public static void generalSelection(Connection connection) throws Exception {
-        String selectQuery = "select amount, intensity " +
-                "from locatorData " +
-                "where intensity is not null";
-        Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery(selectQuery);
+    public static void correlation(Connection connection) throws SQLException{
+        for (WeatherEvents event : WeatherEvents.values()) {
+            String correlationQuery = "select round(cast(corr(l.z1, p.amount) as NUMERIC), 2) as corr, count(*) as counter " +
+                    "from locator as l " +
+                    "inner join precipitation as p " +
+                    "on l.date = p.measurementDate " +
+                    "and l.time = p.measurementTime " +
+                    "where (" + DataBase.coordinator() + ")" +
+                    "and weatherEvent = '" + event.getWeatherCode() + "'";
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(correlationQuery);
 
-        File targetDir = new File(System.getProperty("user.dir") + "\\DataFiles");
-        File targetFile = new File(targetDir, "dispersionFile.txt");
-        PrintStream printStream = new PrintStream(new FileOutputStream(targetFile));
-
-        while (resultSet.next()) {
-            printStream.printf(Locale.US, "%.2f\t%.2f\r\n", resultSet.getDouble("amount"), (resultSet.getDouble("intensity")/6));
+            while (resultSet.next()) {
+                System.out.println(event.getWeatherCode() + "\t" + resultSet.getDouble("corr") + "\t" + resultSet.getInt("counter"));
+            }
         }
-        printStream.close();
+    }
+
+    public static String coordinator() {
+        StringBuilder result = new StringBuilder();
+        Coordinates coordinates = new Coordinates();
+        HashMap<Integer, Coordinates> coordinatesHM = coordinates.getCoordinatesHashMap();
+        for (Map.Entry<Integer, Coordinates> entry : coordinatesHM.entrySet()) {
+            result.append("p.rainGauge = ").append(entry.getKey());
+            result.append(" and l.x = ").append(entry.getValue().getX());
+            result.append(" and l.y = ").append(entry.getValue().getY()).append(" \nor ");
+        }
+        return result.delete(result.length()-3, result.length()).toString();
     }
 
     public static void perGauge(Connection connection) throws Exception{

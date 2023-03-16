@@ -1,56 +1,37 @@
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Coefficients {
-    static ArrayList<Double[]> container = new ArrayList<>();
+    private final double A;
+    private final double b;
+    private static final HashMap<WeatherEvents, Coefficients> coefficientsHashMap = new HashMap<>();
+
+    public HashMap<WeatherEvents, Coefficients> getCoefficientsHashMap() {
+        return coefficientsHashMap;
+    }
 
     Coefficients() {
+        A = -999.0;
+        b = -999.0;
     }
 
-    Coefficients(double A, double b, int rainGauge) {
-        if (duplicateCheck(rainGauge)) {
-            Double[] content = new Double[3];
-            content[0] = A;
-            content[1] = b;
-            content[2] = (double) rainGauge;
-
-            container.add(content);
-        } else {
-            System.out.println(rainGauge + " rainGauge уже есть в массиве");
-        }
+    public Coefficients(double A, double b) {
+        this.A = A;
+        this.b = b;
     }
 
-    boolean duplicateCheck(int rainGauge) {
-        for (Double[] var : container) {
-            if (var[2] == rainGauge) {
-                return false;
-            }
-        }
-        return true;
+    public double getA() {
+        return A;
     }
 
-    void show() {
-        for (Double[] var : container) {
-            System.out.println("Для осадкомера " + var[2]);
-            System.out.println("A = " + var[0]);
-            System.out.println("b = " + var[1] + "\n");
-        }
+    public double getB() {
+        return b;
     }
 
-    double getA(int rainGauge) {
-        for (Double[] var : container) {
-            if (var[2] == rainGauge) {
-                return var[0];
-            }
+    public void show() {
+        for (Map.Entry<WeatherEvents, Coefficients> entry : coefficientsHashMap.entrySet()) {
+            System.out.println(entry.getKey() + ":\tA: " +
+                    entry.getValue().getA() + ",\tb: " + entry.getValue().getB());
         }
-        return -999.0;
-    }
-
-    double getB(int rainGauge) {
-        for (Double[] var : container) {
-            if (var[2] == rainGauge) {
-                return var[1];
-            }
-        }
-        return -999.0;
     }
 }

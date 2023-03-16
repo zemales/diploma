@@ -5,9 +5,7 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.sql.*;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
@@ -24,7 +22,7 @@ public class Precipitation {
         Precipitation.showFiles(dir.listFiles());
     }
 
-    static void parseAndInsert(File file) {
+    private static void parseAndInsert(File file) {
         try {
             String insertion = "insert into precipitation (measurementDate, measurementTime," +
                     " rainGauge, amount) values (?, ?, ?, ?);";
@@ -54,7 +52,7 @@ public class Precipitation {
         }
     }
 
-    static void showFiles(File[] files) {
+    private static void showFiles(File[] files) {
         for (File file : files) {
             if (file.isDirectory()) {
                 showFiles(file.listFiles());
@@ -64,7 +62,7 @@ public class Precipitation {
         }
     }
 
-    static void date(PreparedStatement preparedStatement, Row row) throws SQLException {
+    private static void date(PreparedStatement preparedStatement, Row row) throws SQLException {
         try {
             Cell dateCell = row.getCell(1);
             if (dateCell.getCellType() == CellType.STRING) {
@@ -78,7 +76,7 @@ public class Precipitation {
         }
     }
 
-    static void time (PreparedStatement preparedStatement, Row row) throws SQLException {
+    private static void time (PreparedStatement preparedStatement, Row row) throws SQLException {
         try {
             Cell timeCell = row.getCell(2);
             if (timeCell.getCellType() == CellType.STRING) {
@@ -91,7 +89,7 @@ public class Precipitation {
         }
     }
 
-    static void rainGauge(PreparedStatement preparedStatement, Row row, int cell) throws SQLException{
+    private static void rainGauge(PreparedStatement preparedStatement, Row row, int cell) throws SQLException{
         try {
             Cell gaugeNumberCell = row.getCell(cell);
             if (gaugeNumberCell.getCellType() == CellType.STRING) {
@@ -104,7 +102,7 @@ public class Precipitation {
         }
     }
 
-    static void amount(PreparedStatement preparedStatement, Row row, int cell) throws SQLException{
+    private static void amount(PreparedStatement preparedStatement, Row row, int cell) throws SQLException{
         try {
             Cell amountCell = row.getCell(cell+3);
             if (amountCell.getCellType() == CellType.STRING) {

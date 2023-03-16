@@ -4,12 +4,12 @@ public enum WeatherEvents {
     C_LOW("Облака нижнего яруса S"),
     C_MID_HIGH("Облака верхнего и среднего яруса С-А"),
     C_CUMULONIMBUS("Кучевые облака Q"),
-    RA_LIGHT("Слабые осадки"),
-    RA_MODERATE("Умеренные осадки"),
-    RA_HEAVY("Сильные осадки"),
-    SH_LIGHT("Слабые ливневые осадки"),
-    SH_MODERATE("Умеренные ливневые осадки"),
-    SH_HEAVY("Сильные ливневые осадки"),
+    RA_LIGHT("Слабые осадки", 18, 29),
+    RA_MODERATE("Умеренные осадки", 30, 45),
+    RA_HEAVY("Сильные осадки", 46, 63),
+    SH_LIGHT("Слабые ливневые осадки", 18, 29),
+    SH_MODERATE("Умеренные ливневые осадки", 30, 45),
+    SH_HEAVY("Сильные ливневые осадки", 46, 63),
     TS_30_70("Гроза с вероятностью 30-70%"),
     TS_70_85("Гроза с вероятностью 70-85%"),
     TS_85("Гроза с вероятностью >85%"),
@@ -19,14 +19,33 @@ public enum WeatherEvents {
     NULL(null);
 
     private final String weatherCode;
+    private final Integer z1MIN;
+    private final Integer z1MAX;
+
+    WeatherEvents(String weatherCode, int z1MIN, int z1MAX) {
+        this.weatherCode = weatherCode;
+        this.z1MIN = z1MIN;
+        this.z1MAX = z1MAX;
+    }
+
+    WeatherEvents(String weatherCode) {
+        this.weatherCode = weatherCode;
+        z1MIN = null;
+        z1MAX = null;
+    }
 
     public String getWeatherCode() {
         return this.weatherCode;
     }
 
-    WeatherEvents(String weatherCode) {
-        this.weatherCode = weatherCode;
+    public Integer getZ1MIN() {
+        return z1MIN;
     }
+
+    public Integer getZ1MAX() {
+        return z1MAX;
+    }
+
     static final HashMap<Integer, String> weatherHashMap = new java.util.HashMap<>();
     static {
         weatherHashMap.put(1, "Облака верхнего и среднего яруса С-А");

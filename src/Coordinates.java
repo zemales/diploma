@@ -3,14 +3,19 @@ import java.util.HashMap;
 public class Coordinates {
     private final int x;
     private final int y;
-    static HashMap<Integer, Coordinates> coordinatesHashMap = new HashMap<>();
+    private static final HashMap<Integer, Coordinates> coordinatesHashMap = new HashMap<>();
 
     static {
-        coordinatesHashMap.put(22, new Coordinates(99, 95));
-        coordinatesHashMap.put(25, new Coordinates(94, 100));
-        coordinatesHashMap.put(26, new Coordinates(98, 100));
-        coordinatesHashMap.put(32, new Coordinates(88, 93));
-        coordinatesHashMap.put(34, new Coordinates(96, 97));
+        coordinatesHashMap.put(1022, new Coordinates(99, 95));
+        coordinatesHashMap.put(1025, new Coordinates(94, 100));
+        coordinatesHashMap.put(1026, new Coordinates(98, 100));
+        coordinatesHashMap.put(1032, new Coordinates(88, 93));
+        coordinatesHashMap.put(1034, new Coordinates(96, 97));
+    }
+
+    public Coordinates() {
+        x = -999;
+        y = -999;
     }
 
     public Coordinates(int x, int y) {

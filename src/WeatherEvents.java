@@ -46,6 +46,15 @@ public enum WeatherEvents {
         return z1MAX;
     }
 
+    public String rainable() {
+        return "'" + RA_LIGHT.getWeatherCode() + "', " +
+                "'" + RA_MODERATE.getWeatherCode() + "', " +
+                "'" + RA_HEAVY.getWeatherCode() + "', " +
+                "'" + SH_LIGHT.getWeatherCode() + "', " +
+                "'" + SH_MODERATE.getWeatherCode() + "', " +
+                "'" + SH_HEAVY.getWeatherCode() + "'";
+    }
+
     static final HashMap<Integer, String> weatherHashMap = new java.util.HashMap<>();
     static {
         weatherHashMap.put(1, "Облака верхнего и среднего яруса С-А");

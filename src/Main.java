@@ -9,12 +9,7 @@ public class Main {
             e.printStackTrace();
         }
 
-        DataBase.generalSelection(connection);
-        DataBase.perGauge(connection);
-        DataBase.coefficientsSelect(connection);
-
-        DataBase.poc_meth(connection);
-
-        Coefficients object = new Coefficients();
+        DataBase dataBase = new DataBase(connection);
+        dataBase.coefficientsSelect();
     }
 }

@@ -1,7 +1,7 @@
 import java.sql.*;
 
 public class Main {
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) {
         Connection connection = null;
         try {
             connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "3515");

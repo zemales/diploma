@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.Objects;
 
 public class Coordinates {
     private final int x;
@@ -26,18 +27,18 @@ public class Coordinates {
         coordinatesHashMap.put(1019, new Coordinates(86, 86));
         coordinatesHashMap.put(1020, new Coordinates(87, 90));
         coordinatesHashMap.put(1021, new Coordinates(92, 91));
-        coordinatesHashMap.put(1022, new Coordinates(99, 95)); //pluvio
+        coordinatesHashMap.put(1022, new Coordinates(99, 95));
         coordinatesHashMap.put(1023, new Coordinates(100, 94));
         coordinatesHashMap.put(1024, new Coordinates(90, 103));
-        coordinatesHashMap.put(1025, new Coordinates(94, 100)); //pluvio
-        coordinatesHashMap.put(1026, new Coordinates(98, 100)); //pluvio
+        coordinatesHashMap.put(1025, new Coordinates(94, 100));
+        coordinatesHashMap.put(1026, new Coordinates(98, 100));
         coordinatesHashMap.put(1027, new Coordinates(97, 104));
         coordinatesHashMap.put(1028, new Coordinates(101, 103));
         coordinatesHashMap.put(1029, new Coordinates(104, 105));
         coordinatesHashMap.put(1030, new Coordinates(97, 108));
         coordinatesHashMap.put(1031, new Coordinates(93, 106));
-        coordinatesHashMap.put(1032, new Coordinates(88, 93)); //pluvio
-        coordinatesHashMap.put(1034, new Coordinates(96, 97)); //pluvio
+        coordinatesHashMap.put(1032, new Coordinates(88, 93));
+        coordinatesHashMap.put(1034, new Coordinates(96, 97));
         coordinatesHashMap.put(1035, new Coordinates(107, 98));
     }
 
@@ -69,5 +70,10 @@ public class Coordinates {
         if (o == null || getClass() != o.getClass()) return false;
         Coordinates that = (Coordinates) o;
         return x == that.x && y == that.y;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
     }
 }

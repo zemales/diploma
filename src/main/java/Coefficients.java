@@ -67,4 +67,11 @@ public class Coefficients {
     public double getB() {
         return b;
     }
+
+    public void show() {
+        for (Map.Entry<WeatherEvents, Coefficients> entry : coefficientsHashMap.entrySet()) {
+            System.out.println(entry.getKey() + ":\tA: " +
+                    entry.getValue().getA() + ",\tb: " + entry.getValue().getB());
+        }
+    }
 }

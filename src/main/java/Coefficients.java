@@ -24,7 +24,7 @@ public class Coefficients {
         individual.put(new Coordinates(85, 103), new Coefficients(217, 1.1)); //1007
         individual.put(new Coordinates(91, 103), new Coefficients(332, 1.3)); //1008
         individual.put(new Coordinates(91, 105), new Coefficients(310, 1.2)); //1009
-        individual.put(new Coordinates(116, 104), new Coefficients(237, 0.5)); //1010
+        //individual.put(new Coordinates(116, 104), new Coefficients(237, 0.5)); //1010
         individual.put(new Coordinates(104, 110), new Coefficients(199, 1.0)); //1011
         individual.put(new Coordinates(101, 112), new Coefficients(290, 1.0)); //1013
         individual.put(new Coordinates(102, 99), new Coefficients(449, 1.3)); //1014

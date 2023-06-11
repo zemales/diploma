@@ -1,2 +1,6 @@
 # Project exclude paths
+.idea/*
 /out/
+
+#Files
+src/main/java/Locator.java

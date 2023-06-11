@@ -17,7 +17,7 @@ public class Coordinates {
         coordinatesHashMap.put(1007, new Coordinates(85, 103));
         coordinatesHashMap.put(1008, new Coordinates(91, 103));
         coordinatesHashMap.put(1009, new Coordinates(91, 105));
-        coordinatesHashMap.put(1010, new Coordinates(116, 104));
+        //coordinatesHashMap.put(1010, new Coordinates(116, 104));
         coordinatesHashMap.put(1011, new Coordinates(104, 110));
         coordinatesHashMap.put(1013, new Coordinates(101, 112));
         coordinatesHashMap.put(1014, new Coordinates(102, 99));
